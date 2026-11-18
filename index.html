@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>DuoBox – Eat • Play • Win • Reuse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#5a25a8; --purple-d:#3b136f; --purple-l:#7b3fd1;
+  --orange:#ff9a1f; --orange-d:#e5730a; --yellow:#ffd23f;
+  --green:#3fb34f; --green-d:#23812f; --blue:#2fa6e8; --pink:#ff5fa2;
+  --ink:#2b1650; --cream:#fff8ea;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Fredoka',system-ui,sans-serif; color:var(--ink);
+  background:var(--purple-d); overflow-x:hidden;
+}
+/* sunburst backgrounds like the video */
+.bg{position:fixed;inset:0;z-index:0;transition:background .5s}
+.bg::before{content:"";position:absolute;left:50%;top:40%;width:260vmax;height:260vmax;transform:translate(-50%,-50%);
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 10deg,rgba(255,255,255,0) 10deg 20deg);
+  animation:spin 60s linear infinite}
+.bg.purple{background:radial-gradient(circle at 50% 40%,#8a4ae0 0%,#5a25a8 45%,#2c0d57 100%)}
+.bg.orange{background:radial-gradient(circle at 50% 40%,#ffd06a 0%,#ff9a1f 50%,#e5640a 100%)}
+.bg.green{background:radial-gradient(circle at 50% 40%,#a6e57d 0%,#3fb34f 55%,#1d6e2a 100%)}
+.dots{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,.35) 1.5px,transparent 1.8px);background-size:34px 34px;opacity:.5}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+.app{position:relative;z-index:1;max-width:520px;margin:0 auto;min-height:100%;
+  padding:max(14px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column}
+.screen{display:none;flex-direction:column;align-items:center;gap:14px;flex:1;animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+.screen.active{display:flex}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* chunky cartoon titles */
+.title{font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;text-align:center;line-height:1.05;letter-spacing:.5px;
+  color:var(--yellow);-webkit-text-stroke:2px var(--purple-d);paint-order:stroke fill;
+  text-shadow:0 4px 0 var(--purple-d),0 7px 12px rgba(0,0,0,.35)}
+.title.white{color:#fff}
+.title.xl{font-size:clamp(38px,11vw,58px)}
+.title.l{font-size:clamp(30px,8.5vw,44px)}
+.title.m{font-size:clamp(22px,6.5vw,30px)}
+.wiggle{animation:wiggle 2.2s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg) scale(1.04)}}
+.bounce{animation:bounce 1.4s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* DuoBox logo built in CSS */
+.logo{position:relative;width:min(250px,62vw);height:min(205px,51vw);margin-top:6px}
+.logo .goodies{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:min(46px,11.5vw);white-space:nowrap;filter:drop-shadow(0 3px 0 rgba(0,0,0,.25))}
+.logo .goodies span{display:inline-block;animation:bounce 1.6s ease-in-out infinite}
+.logo .goodies span:nth-child(2){animation-delay:.2s}.logo .goodies span:nth-child(3){animation-delay:.4s}.logo .goodies span:nth-child(4){animation-delay:.6s}
+.logo .box{position:absolute;bottom:0;left:6%;width:88%;height:66%;background:linear-gradient(180deg,#ffad3b,#f07c0c);
+  border:4px solid var(--purple-d);border-radius:14px 14px 26px 26px;box-shadow:0 7px 0 var(--purple-d),0 14px 20px rgba(0,0,0,.35);
+  clip-path:polygon(0 0,100% 0,94% 100%,6% 100%)}
+.logo .duo{position:absolute;top:22%;left:50%;transform:translateX(-50%) rotate(-4deg);font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:min(64px,16vw);
+  color:#8d3df0;-webkit-text-stroke:3px #fff;paint-order:stroke fill;text-shadow:0 5px 0 var(--purple-d);z-index:2}
+.logo .boxw{position:absolute;bottom:9%;left:50%;transform:translateX(-50%);font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:min(46px,11.5vw);
+  color:#fff;-webkit-text-stroke:3px var(--purple-d);paint-order:stroke fill;z-index:2}
+.logo .eco{position:absolute;right:-2%;bottom:14%;width:min(58px,14vw);height:min(58px,14vw);border-radius:12px;background:var(--green);
+  border:4px solid var(--purple-d);display:grid;place-items:center;font-size:min(32px,8vw);color:#fff;transform:rotate(8deg);z-index:3}
+.slogan{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:#fff;border:3px solid var(--purple-d);border-radius:40px;
+  padding:6px 14px;font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:clamp(16px,4.6vw,21px);box-shadow:0 4px 0 var(--purple-d)}
+.slogan b:nth-child(1){color:var(--orange-d)}.slogan b:nth-child(3){color:var(--purple)}.slogan b:nth-child(5){color:var(--pink)}.slogan b:nth-child(7){color:var(--green-d)}
+.slogan i{color:#bbb;font-style:normal}
+
+/* buttons */
+.btn{font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:clamp(20px,5.6vw,26px);letter-spacing:.5px;border:4px solid var(--purple-d);border-radius:20px;
+  padding:12px 22px;cursor:pointer;color:#fff;background:var(--orange);box-shadow:0 6px 0 var(--purple-d);
+  transition:transform .08s,box-shadow .08s;-webkit-text-stroke:1px var(--purple-d);paint-order:stroke fill;text-shadow:0 2px 0 var(--purple-d)}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--purple-d)}
+.btn.green{background:var(--green)}.btn.purple{background:var(--purple-l)}.btn.blue{background:var(--blue)}.btn.pink{background:var(--pink)}
+.btn.small{font-size:17px;padding:7px 14px;border-radius:14px;border-width:3px;box-shadow:0 4px 0 var(--purple-d)}
+.btn.big{width:100%;font-size:clamp(24px,7vw,32px);padding:14px}
+.pulse{animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+.card{width:100%;background:var(--cream);border:4px solid var(--purple-d);border-radius:24px;padding:16px;box-shadow:0 7px 0 var(--purple-d),0 14px 26px rgba(0,0,0,.3)}
+.bubble{background:#fff;border:3px solid var(--purple-d);border-radius:22px;padding:10px 16px;font-weight:600;font-size:17px;text-align:center;box-shadow:0 4px 0 var(--purple-d)}
+input.name{width:100%;font-family:'Fredoka';font-weight:600;font-size:20px;padding:12px 14px;border-radius:16px;border:3px solid var(--purple-d);
+  text-align:center;outline:none;background:#fff;color:var(--ink)}
+input.name:focus{box-shadow:0 0 0 4px var(--yellow)}
+
+/* top bar */
+.topbar{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{display:flex;align-items:center;gap:6px;background:#fff;border:3px solid var(--purple-d);border-radius:30px;padding:5px 12px;
+  font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:18px;box-shadow:0 3px 0 var(--purple-d);white-space:nowrap}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:3px solid var(--purple-d);background:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 0 var(--purple-d)}
+.iconbtn:active{transform:translateY(3px);box-shadow:none}
+
+/* game choice tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.tile{border:4px solid var(--purple-d);border-radius:26px;padding:14px 8px;cursor:pointer;text-align:center;box-shadow:0 6px 0 var(--purple-d);
+  font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:clamp(19px,5.2vw,24px);color:#fff;-webkit-text-stroke:1px var(--purple-d);paint-order:stroke fill;
+  text-shadow:0 2px 0 var(--purple-d);transition:transform .08s;position:relative}
+.tile:active{transform:translateY(5px);box-shadow:0 1px 0 var(--purple-d)}
+.tile .em{font-size:44px;display:block;-webkit-text-stroke:0;text-shadow:none;margin-bottom:4px}
+.tile.math{background:linear-gradient(160deg,#ffcb45,#ff9a1f)}
+.tile.riddle{background:linear-gradient(160deg,#ffb14a,#ff7a1a)}
+.tile.mix{grid-column:span 2;background:linear-gradient(160deg,#a35cf5,#6a2fd0)}
+.tile small{display:block;font-family:'Fredoka';font-weight:600;font-size:13px;-webkit-text-stroke:0;text-shadow:none;opacity:.95}
+.rules{font-size:16px;font-weight:500;line-height:1.45}
+.rules b{color:var(--purple)}
+.stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* streak meter: 5 slush cups */
+.streak{display:flex;gap:6px;justify-content:center;background:rgba(0,0,0,.25);padding:8px 12px;border-radius:30px;border:3px solid rgba(255,255,255,.35)}
+.cup{width:clamp(40px,11vw,50px);height:clamp(40px,11vw,50px);border-radius:50%;display:grid;place-items:center;font-size:clamp(22px,6vw,28px);
+  background:rgba(255,255,255,.18);border:3px dashed rgba(255,255,255,.5);filter:grayscale(1) opacity(.45);transition:all .3s}
+.cup.on{background:var(--yellow);border:3px solid var(--purple-d);filter:none;animation:popcup .5s cubic-bezier(.2,2,.4,1)}
+@keyframes popcup{0%{transform:scale(.3)}100%{transform:scale(1)}}
+.streaktxt{color:#fff;font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:18px;text-shadow:0 2px 0 var(--purple-d);text-align:center}
+
+/* question */
+.qcard{position:relative;text-align:center}
+.tag{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;border:3px solid var(--purple-d);
+  border-radius:20px;padding:2px 14px;font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:16px;white-space:nowrap;-webkit-text-stroke:.5px var(--purple-d);paint-order:stroke fill}
+.tag.r{background:var(--purple-l)}
+.qemoji{font-size:44px;margin-top:6px}
+.qtext{font-size:clamp(21px,6vw,27px);font-weight:700;line-height:1.3;margin:6px 0 4px;color:var(--ink)}
+.qtext .big{font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-weight:400;font-size:clamp(36px,11vw,52px);color:var(--purple);display:block;letter-spacing:1px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.ans{font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:clamp(20px,5.8vw,26px);min-height:72px;padding:10px 6px;border:4px solid var(--purple-d);border-radius:20px;
+  color:#fff;cursor:pointer;box-shadow:0 6px 0 var(--purple-d);-webkit-text-stroke:1px var(--purple-d);paint-order:stroke fill;text-shadow:0 2px 0 var(--purple-d);
+  line-height:1.15;transition:transform .08s}
+.ans.long{font-size:clamp(16px,4.4vw,19px)}
+.ans:active{transform:translateY(5px);box-shadow:0 1px 0 var(--purple-d)}
+.ans:nth-child(1){background:#ff8a1f}.ans:nth-child(2){background:#2fa6e8}.ans:nth-child(3){background:#3fb34f}.ans:nth-child(4){background:#ff5fa2}
+.ans.right{background:#2ecc40!important;animation:pulse .6s 2}
+.ans.wrong{background:#e53935!important;animation:shake .45s}
+.ans.dim{opacity:.35}
+.ans:disabled{cursor:default}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+
+/* feedback overlay */
+.overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(30,8,60,.55)}
+.overlay.show{display:flex}
+.fb{max-width:420px;width:100%;text-align:center;animation:pop .4s cubic-bezier(.2,1.8,.4,1)}
+.fb .face{font-size:78px;line-height:1}
+.fb p{font-size:19px;font-weight:600;margin:8px 0 12px}
+.fb .ansreveal{font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;color:var(--purple);font-size:26px}
+
+/* win screen */
+.slush{width:min(210px,52vw);filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
+.ticket{width:100%;background:#fff;border:4px dashed var(--purple-d);border-radius:22px;padding:14px;text-align:center;box-shadow:0 6px 0 var(--purple-d)}
+.ticket .code{font-family:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:clamp(30px,9vw,40px);color:var(--purple);letter-spacing:3px}
+.ticket small{display:block;font-size:14px;color:#6b5a8a;font-weight:500}
+.ticket .who{font-weight:700;font-size:18px}
+
+.foot{color:rgba(255,255,255,.75);font-size:13px;text-align:center;margin-top:auto;padding-top:10px}
+.foot button{background:none;border:none;color:rgba(255,255,255,.75);text-decoration:underline;font-family:inherit;font-size:13px;cursor:pointer}
+.msg{font-weight:700;font-size:18px;text-align:center;min-height:26px}
+canvas#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="bg purple" id="bg"></div>
+<div class="dots"></div>
+<canvas id="confetti"></canvas>
+
+<div class="app">
+
+  <!-- ============ INTRO ============ -->
+  <section class="screen active" id="s-intro">
+    <div class="logo" aria-label="DuoBox logo">
+      <div class="goodies"><span>🥪</span><span>🍎</span><span>🧃</span><span>🎮</span></div>
+      <div class="box"></div>
+      <div class="duo">DUO</div>
+      <div class="boxw">BOX</div>
+      <div class="eco">♻</div>
+    </div>
+    <div class="slogan"><b>Eat</b><i>•</i><b>Play</b><i>•</i><b>Win</b><i>•</i><b>Reuse</b></div>
+    <h1 class="title l wiggle" style="margin-top:6px">Something exciting<br>is inside!</h1>
+    <div class="card" style="text-align:center">
+      <div class="title m" style="color:var(--orange)">EAT FIRST, then…</div>
+      <p style="font-weight:600;margin:6px 0 12px">Solve <b style="color:var(--purple)">5 in a row</b> to win a <b style="color:var(--pink)">FREE SLUSH!</b> 🥤</p>
+      <input class="name" id="nameInput" maxlength="18" placeholder="Type your nickname 😎" autocomplete="off">
+      <div class="msg" id="nameMsg" style="color:#e53935;margin-top:6px"></div>
+      <button class="btn big pulse" id="startBtn" style="margin-top:4px">LET'S PLAY! 🚀</button>
+    </div>
+        <div class="foot">A Year 6 Young Entrepreneurs project 💜</div>
+  </section>
+
+  <!-- ============ MENU ============ -->
+  <section class="screen" id="s-menu">
+    <div class="topbar">
+      <div class="chip">👋 <span id="hiName">Player</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="chip">⭐ <span class="ptsOut">0</span></div>
+        <button class="iconbtn" id="soundBtn" aria-label="Sound effects on or off">🔊</button>
+      </div>
+    </div>
+    <h2 class="title l bounce" style="margin-top:4px">THEN…<br><span class="white">LET THE FUN BEGIN!</span></h2>
+    <div class="tiles">
+      <button class="tile math" data-mode="math"><span class="em">🧮</span>Math<br>Challenge<small>Numbers, money &amp; more</small></button>
+      <button class="tile riddle" data-mode="riddle"><span class="em">💡</span>Riddle<br>Time<small>Tricky brain teasers</small></button>
+      <button class="tile mix" data-mode="mix"><span class="em">🎲</span>Mix It Up!<small>Maths + riddles, surprise every time</small></button>
+    </div>
+    <div class="card rules">
+      <div class="title m" style="color:var(--orange);margin-bottom:6px">How to win 🏆</div>
+      ✅ Get <b>5 answers right in a row</b><br>
+      ⭐ Earn <b>100 points</b> and a <b>FREE SLUSH</b> 🥤<br>
+      🙈 One wrong answer? Your streak starts again… <b>5 more to go!</b><br>
+      🔄 New questions every time you play!
+    </div>
+    <div class="stats">
+      <div class="chip">🥤 Slushes won: <span id="slushCount">0</span></div>
+      <div class="chip">🔥 Best streak: <span id="bestStreak">0</span></div>
+    </div>
+    <div class="foot">
+      <button id="changeName">Change nickname</button> · <button id="staffBtn">Stall staff: check a code</button>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section class="screen" id="s-game">
+    <div class="topbar">
+      <button class="iconbtn" id="homeBtn" aria-label="Back to menu">🏠</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="chip">⭐ <span class="ptsOut">0</span></div>
+      </div>
+    </div>
+    <div class="streak" id="streak" aria-label="Streak progress"></div>
+    <div class="streaktxt" id="streakTxt">Get 5 in a row to win!</div>
+    <div class="card qcard" style="margin-top:12px">
+      <div class="tag" id="qTag">🧮 MATH</div>
+      <div class="qemoji" id="qEmoji">🤔</div>
+      <div class="qtext" id="qText"></div>
+    </div>
+    <div class="answers" id="answers"></div>
+  </section>
+
+  <!-- ============ WIN ============ -->
+  <section class="screen" id="s-win">
+    <h2 class="title l" style="margin-top:4px">SCAN • PLAY •<br><span class="white">EARN POINTS!</span></h2>
+    <svg class="slush bounce" viewBox="0 0 200 250" aria-label="Slush cup">
+      <rect x="112" y="0" width="14" height="80" rx="6" fill="#ff5fa2" stroke="#3b136f" stroke-width="5" transform="rotate(14 119 40)"/>
+      <path d="M38 78 Q40 30 100 28 Q160 30 162 78 Z" fill="#5fc8ff" stroke="#3b136f" stroke-width="6"/>
+      <path d="M60 60 Q80 40 100 50 Q125 36 140 62" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".8"/>
+      <rect x="26" y="74" width="148" height="22" rx="10" fill="#fff" stroke="#3b136f" stroke-width="6"/>
+      <path d="M38 96 L58 238 Q100 248 142 238 L162 96 Z" fill="#8d3df0" stroke="#3b136f" stroke-width="6"/>
+      <rect x="44" y="140" width="112" height="38" rx="6" fill="#ff9a1f" stroke="#3b136f" stroke-width="5"/>
+      <text x="100" y="168" text-anchor="middle" font-family="Lilita One" font-size="27" fill="#fff" stroke="#3b136f" stroke-width="2" paint-order="stroke">SLUSH</text>
+      <path d="M56 196 L144 196" stroke="#ffd23f" stroke-width="8" stroke-linecap="round"/>
+    </svg>
+    <h2 class="title xl wiggle">YOU WON<br>A SLUSH!</h2>
+    <div class="chip" style="font-size:22px">⭐ +100 POINTS!</div>
+    <div class="ticket">
+      <small>🎟️ Show this screen at the DuoBox stall</small>
+      <div class="who" id="tName">Player</div>
+      <div class="code" id="tCode">DUO-0000</div>
+      <small id="tTime"></small>
+    </div>
+    <button class="btn big green" id="againBtn">PLAY AGAIN 🎮</button>
+    <button class="btn small purple" id="menuBtn2">Back to menu</button>
+  </section>
+
+  <!-- ============ STAFF CODE CHECK ============ -->
+  <section class="screen" id="s-staff">
+    <h2 class="title l">Stall Staff 🧑‍🍳</h2>
+    <div class="card" style="text-align:center">
+      <p style="font-weight:600;margin-bottom:10px">Type the winner's code to check it is a real DuoBox code.</p>
+      <input class="name" id="codeInput" maxlength="10" placeholder="DUO-XXXXX" autocomplete="off" style="text-transform:uppercase">
+      <button class="btn big blue" id="checkBtn" style="margin-top:12px">CHECK CODE ✔️</button>
+      <div class="msg" id="codeMsg" style="margin-top:10px"></div>
+      <p style="font-size:14px;color:#6b5a8a;margin-top:6px">Tip: write down each code you give a slush for, so the same code can't be used twice.</p>
+    </div>
+    <button class="btn small purple" id="staffBack">Back</button>
+  </section>
+</div>
+
+<!-- feedback popup -->
+<div class="overlay" id="overlay" role="dialog" aria-live="assertive">
+  <div class="card fb" id="fbCard">
+    <div class="face" id="fbFace">🎉</div>
+    <div class="title l" id="fbTitle">YESSS!</div>
+    <p id="fbText"></p>
+    <button class="btn big" id="fbBtn">NEXT ➜</button>
+  </div>
+</div>
+
+<script>
+(() => {
+/* ---------------- helpers ---------------- */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const r = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmt = n => n.toLocaleString('en-US');
+
+/* ---------------- saved progress (this device only) ---------------- */
+const KEY = 'duobox_game_v1';
+let save = { name: '', points: 0, slushes: 0, best: 0, seen: [], sound: true };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) save = Object.assign(save, s); } catch (e) {}
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
+
+/* ---------------- sounds (made in the browser, no files) ---------------- */
+let actx = null;
+function getCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(freq, start, dur, type = 'square', vol = .08) {
+  vol *= 2.2;
+  if (!save.sound) return;
+  try {
+    getCtx();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, actx.currentTime + start);
+    g.gain.setValueAtTime(vol, actx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + start + dur);
+    o.connect(g); g.connect(actx.destination); o.start(actx.currentTime + start); o.stop(actx.currentTime + start + dur);
+  } catch (e) {}
+}
+const sfx = {
+  click: () => tone(660, 0, .08, 'triangle', .1),
+  right: () => { tone(523, 0, .12); tone(659, .1, .12); tone(784, .2, .2); },
+  wrong: () => { tone(392, 0, .25, 'sawtooth', .07); tone(330, .22, .25, 'sawtooth', .07); tone(262, .44, .45, 'sawtooth', .07); },
+  win: () => { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .13, .2, 'square', .08)); }
+};
+
+/* ---------------- background music: an original, upbeat motivational anthem composed in code ----------------
+   Instrumental only (no words). 16-bar loop at 132 beats per minute, chords Am – F – C – G:
+   bars 1–4 sparkly intro, bars 5–8 build-up with a whoosh, bars 9–16 big chorus.
+   Browsers only allow sound after a first tap. */
+const Music = (() => {
+  const mtof = m => 440 * 2 ** ((m - 69) / 12);
+  const STEP = 60 / 132 / 2;                                   // one eighth note
+  const bass = [45, 41, 48, 43];                                // A, F, C, G
+  const pads = [[57, 60, 64], [57, 60, 65], [55, 60, 64], [55, 59, 62]];
+  const arps = [[69, 72, 76, 81], [69, 72, 77, 81], [67, 72, 76, 79], [67, 71, 74, 79]];
+  const verse = [[69,-1,72,-1,76,-1,74,72], [72,-1,69,-1,72,74,-1,-1], [76,-1,74,-1,72,-1,71,72], [74,-1,-1,71,74,76,-1,79]];
+  const chorus = [[81,81,84,-1,83,-1,81,79], [77,-1,79,81,84,-1,81,79], [79,-1,76,79,84,83,84,86], [88,-1,86,-1,83,-1,86,88]];
+  let master = null, comp = null, timer = null, step = 0, nextT = 0, playing = false, noise = null;
+
+  function out(ctx, node, pan) {
+    if (pan && ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; node.connect(p); p.connect(comp); }
+    else node.connect(comp);
+  }
+  function voice(ctx, freq, t, dur, o) {
+    const g = ctx.createGain(), f = ctx.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.value = o.cut || 12000; f.Q.value = o.q || 0.7;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(o.vol, t + (o.att || .008));
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    (o.detune ? [-o.detune, o.detune] : [0]).forEach(dt => {
+      const osc = ctx.createOscillator(); osc.type = o.type; osc.frequency.setValueAtTime(freq, t); osc.detune.value = dt;
+      osc.connect(f); osc.start(t); osc.stop(t + dur + .05);
+    });
+    f.connect(g); out(ctx, g, o.pan);
+  }
+  function getNoise(ctx) {
+    if (!noise) { noise = ctx.createBuffer(1, ctx.sampleRate * 2.2, ctx.sampleRate); const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    return noise;
+  }
+  function kick(ctx, t, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(45, t + .11);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+    o.connect(g); out(ctx, g); o.start(t); o.stop(t + .22);
+  }
+  function hit(ctx, t, vol, freq, len, type, pan) {             // snare, clap, hi-hats, crash from noise
+    const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = getNoise(ctx); f.type = type || (freq > 5000 ? 'highpass' : 'bandpass'); f.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + len);
+    s.connect(f); f.connect(g); out(ctx, g, pan); s.start(t); s.stop(t + len + .02);
+  }
+  function clap(ctx, t, vol) { [0, .012, .024].forEach(d => hit(ctx, t + d, vol, 1500, .09)); }
+  function whoosh(ctx, t, len) {                                // rising "swoosh" before the chorus
+    const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = getNoise(ctx); f.type = 'bandpass'; f.Q.value = 2;
+    f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(9000, t + len);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + len); g.gain.exponentialRampToValueAtTime(.0001, t + len + .05);
+    s.connect(f); f.connect(g); out(ctx, g); s.start(t); s.stop(t + len + .1);
+  }
+  function schedule() {
+    const ctx = getCtx();
+    while (nextT < ctx.currentTime + .15) {
+      const bar = Math.floor(step / 8) % 16, sec = bar < 4 ? 0 : bar < 8 ? 1 : 2, c = bar % 4, e = step % 8, t = nextT;
+      const big = sec === 2;
+      // chord pad, brighter in the chorus
+      if (e === 0) pads[c].forEach((m, i) => voice(ctx, mtof(m), t, STEP * 8, { type: 'sawtooth', vol: big ? .03 : .022, cut: big ? 2600 : 1500, att: .15, detune: 9, pan: [-.35, 0, .35][i] }));
+      // sparkly 16th-note arpeggio bouncing left and right
+      [0, 1].forEach(h => {
+        const k = (e * 2 + h) % 4, n = arps[c][k] + (big ? 12 : 0);
+        voice(ctx, mtof(n), t + h * STEP / 2, STEP * .45, { type: 'square', vol: sec === 0 ? .018 : .024, cut: 5000, pan: h ? .45 : -.45 });
+      });
+      // bass: bouncy in intro, pumping eighths from the build-up on
+      if (sec === 0) { if (e % 2 === 0) voice(ctx, mtof(bass[c]), t, STEP * 1.6, { type: 'triangle', vol: .3 }); }
+      else voice(ctx, mtof(bass[c] + (e % 2 ? 12 : 0)), t, STEP * .8, { type: 'sawtooth', vol: big ? .17 : .14, cut: big ? 900 : 650, q: 3 });
+      // lead melody: two slightly detuned saws = big shiny sound
+      const m = (big ? chorus : verse)[c][e];
+      if (m > 0) {
+        voice(ctx, mtof(m), t, STEP * (big ? 1.6 : 1.9), { type: 'sawtooth', vol: big ? .045 : .035, cut: big ? 4500 : 3000, detune: 8 });
+        if (big) voice(ctx, mtof(m - 12), t, STEP * 1.4, { type: 'square', vol: .022, cut: 2500 });
+      }
+      // drums
+      if (big) {
+        if (e % 2 === 0) kick(ctx, t, .55);
+        if (e === 2 || e === 6) { hit(ctx, t, .2, 1900, .13); clap(ctx, t, .12); }
+        hit(ctx, t, e % 2 ? .06 : .035, 8500, e % 2 ? .1 : .035, 'highpass', e % 2 ? .3 : -.3);   // open hat on the off-beat
+        if (bar === 8 && e === 0) hit(ctx, t, .18, 6000, 1.6, 'highpass');                      // crash into the chorus
+      } else if (sec === 1) {
+        if (e % 2 === 0) kick(ctx, t, .45);
+        if (e === 2 || e === 6) clap(ctx, t, .1);
+        if (e % 2) hit(ctx, t, .04, 8500, .04);
+        if (bar === 7) { if (e === 0) whoosh(ctx, t, STEP * 8); if (e >= 4) hit(ctx, t, .07 + (e - 4) * .035, 1900, .08); }
+      } else {
+        if (e === 0 || e === 4) kick(ctx, t, .4);
+        if (e % 2) hit(ctx, t, .03, 8500, .04);
+      }
+      nextT += STEP; step++;
+    }
+  }
+  return {
+    start() {
+      if (playing) return;
+      try {
+        const ctx = getCtx();
+        if (!master) {
+          master = ctx.createGain();
+          comp = ctx.createDynamicsCompressor();                    // keeps it punchy and stops it getting harsh
+          comp.threshold.value = -16; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .2;
+          comp.connect(master); master.connect(ctx.destination);
+        }
+        master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setValueAtTime(.75, ctx.currentTime);
+        nextT = ctx.currentTime + .05; playing = true; timer = setInterval(schedule, 25); schedule();
+      } catch (e) {}
+    },
+    duck(sec = 2.5) {                                           // go quiet for the win fanfare, then come back
+      if (!playing || !master) return;
+      const t = getCtx().currentTime; master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(.15, t); master.gain.linearRampToValueAtTime(.75, t + sec);
+    },
+    get playing() { return playing; }
+  };
+})();
+// pause the music when the phone screen is off or the tab is hidden
+document.addEventListener('visibilitychange', () => {
+  if (!actx) return;
+  if (document.hidden) actx.suspend(); else actx.resume();
+});
+
+/* ---------------- confetti ---------------- */
+const cv = $('#confetti'), cx = cv.getContext('2d'); let parts = [], raf = null;
+function sizeCanvas() { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; }
+addEventListener('resize', sizeCanvas); sizeCanvas();
+function confetti(n = 120) {
+  const cols = ['#ffd23f', '#ff9a1f', '#ff5fa2', '#3fb34f', '#2fa6e8', '#8d3df0', '#fff'];
+  for (let i = 0; i < n; i++) parts.push({
+    x: cv.width / 2 + (Math.random() - .5) * cv.width * .3, y: cv.height * .35,
+    vx: (Math.random() - .5) * 26 * devicePixelRatio, vy: (-Math.random() * 22 - 6) * devicePixelRatio,
+    s: (6 + Math.random() * 8) * devicePixelRatio, c: pick(cols), rot: Math.random() * 6, vr: (Math.random() - .5) * .4, life: 140 + Math.random() * 60
+  });
+  if (!raf) loop();
+}
+function loop() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  parts.forEach(p => { p.vy += .55 * devicePixelRatio; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life--;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.fillStyle = p.c; cx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); cx.restore(); });
+  parts = parts.filter(p => p.life > 0 && p.y < cv.height + 40);
+  raf = parts.length ? requestAnimationFrame(loop) : (cx.clearRect(0, 0, cv.width, cv.height), null);
+}
+
+/* ---------------- funny names & lines ---------------- */
+const pals = ['Captain Cupcake', 'Sandwich Sam', 'Juicy Jana', 'Professor Grape', 'Slushy Sara', 'Mister Muffin', 'Lunchbox Leo', 'Crunchy Karim', 'Mango Mona', 'Dino Dina'];
+const yay = [['🎉', 'YESSS!'], ['🧠', 'BIG BRAIN!'], ['🔥', "YOU'RE ON FIRE!"], ['🥪', 'SANDWICH-TASTIC!'], ['🧁', 'CUPCAKE GENIUS!'], ['💥', 'BOOM! NAILED IT!'], ['🧙', 'MATH WIZARD!'], ['🚀', 'TO THE MOON!'], ['😎', 'TOO COOL!'], ['🦸', 'SUPER SOLVER!']];
+const oops = [['🙈', 'OOPSIE DAISY!'], ['🍝', 'UH-OH, SPAGHETTI-O!'], ['🤏', 'SO CLOSE!'], ['🍇', 'THE GRAPES ARE GIGGLING!'], ['🥶', 'BRAIN FREEZE!'], ['🐒', 'MONKEY MIX-UP!'], ['🌪️', 'WHOOPS-A-DOODLE!']];
+const streakLines = ['Get 5 in a row to win!', '1 down, 4 to go! 💪', '2 in a row! Keep going! 🙌', 'Halfway there! 3 in a row! 🤩', '4 in a row! ONE MORE!! 😱'];
+
+/* ---------------- MATH QUESTION MAKER (new numbers every time) ---------------- */
+function numOpts(ans, extra = []) {
+  const set = new Set([ans]);
+  const cands = shuffle([...extra, ans + 1, ans - 1, ans + 2, ans - 2, ans + 10, ans - 10, ans + 5, ans - 5, ans + 3, ans * 2, Math.round(ans / 2)]);
+  for (const c of cands) { if (set.size >= 4) break; if (Number.isInteger(c) && c >= 0 && !set.has(c)) set.add(c); }
+  let k = 4; while (set.size < 4) set.add(ans + k++);
+  return shuffle([...set]).map(String);
+}
+const big = s => `<span class="big">${s}</span>`;
+const timeStr = m => { const h = Math.floor(m / 60), mm = m % 60; return `${h}:${String(mm).padStart(2, '0')}`; };
+
+const mathMakers = [
+  () => { const a = r(25, 499), b = r(15, 399); return { e: '➕', q: `What is…${big(`${a} + ${b}`)}`, a: a + b }; },
+  () => { const a = r(120, 900), b = r(20, a - 30); return { e: '➖', q: `What is…${big(`${a} − ${b}`)}`, a: a - b }; },
+  () => { const a = r(3, 12), b = r(3, 12); return { e: '✖️', q: `What is…${big(`${a} × ${b}`)}`, a: a * b, x: [a * (b + 1), a * (b - 1)] }; },
+  () => { const a = r(12, 45), b = r(2, 6); return { e: '✖️', q: `What is…${big(`${a} × ${b}`)}`, a: a * b, x: [a * b + b, a * b - b] }; },
+  () => { const b = r(2, 12), ans = r(2, 12); return { e: '➗', q: `What is…${big(`${b * ans} ÷ ${b}`)}`, a: ans }; },
+  () => { const ans = r(12, 85), b = r(11, 90); return { e: '🔍', q: `Find the missing number!${big(`? + ${b} = ${ans + b}`)}`, a: ans }; },
+  () => { const a = r(3, 10), ans = r(3, 12); return { e: '🔍', q: `Find the missing number!${big(`${a} × ? = ${a * ans}`)}`, a: ans }; },
+  () => { const ans = r(15, 70), b = r(10, 60); return { e: '🔍', q: `Find the missing number!${big(`? − ${b} = ${ans}`)}`, a: ans + b }; },
+  () => { const d = pick([2, 3, 4, 5, 10]), n = d === 4 && Math.random() < .5 ? 3 : 1, base = d * r(2, 12); return { e: '🍕', q: `What is ${big(`${n}/${d} of ${base}`)}`, a: base / d * n, x: [base / d, base - base / d * n] }; },
+  () => { const p = pick([10, 50, 25]), base = p === 25 ? 4 * r(3, 25) : p === 50 ? 2 * r(10, 80) : 10 * r(2, 40); return { e: '💯', q: `What is ${big(`${p}% of ${base}`)}`, a: base * p / 100 }; },
+  () => { const [it, pr, e] = pick([['slushes', 25, '🥤'], ['cupcakes', 10, '🧁'], ['juices', 9, '🧃'], ['sandwiches', 20, '🥪'], ['DuoBoxes', 120, '📦']]); const n = r(2, 6);
+          return { e, q: `${pick(pals)} buys ${n} ${it}. Each one costs ${pr} EGP. How much is that altogether?`, a: n * pr, x: [n * pr + pr, n * pr - pr, n + pr], u: ' EGP' }; },
+  () => { const [it, pr, e] = pick([['cupcakes', 10, '🧁'], ['juices', 9, '🧃'], ['slushes', 25, '🥤'], ['sandwiches', 20, '🥪']]); const n = r(2, 5), pay = n * pr < 100 ? 100 : 200;
+          return { e: '💸', q: `${pick(pals)} buys ${n} ${it} at ${pr} EGP each and pays with ${pay} EGP. How much change?`, a: pay - n * pr, x: [n * pr, pay - n * pr + pr], u: ' EGP' }; },
+  () => { const st = r(8, 11) * 60 + r(0, 9) * 5, d = pick([15, 20, 25, 30, 35, 40, 45]), end = st + d;
+          const opts = shuffle([...new Set([end, end + 5, end - 5, end + 10, end + 60].map(timeStr))].slice(0, 4));
+          if (!opts.includes(timeStr(end))) opts[0] = timeStr(end);
+          return { e: '⏰', q: `Break starts at ${timeStr(st)} and lasts ${d} minutes. What time does it end?`, a: timeStr(end), opts: shuffle(opts) }; },
+  () => { const s = r(1, 30), d = r(2, 9), down = Math.random() < .3; const seq = [0, 1, 2, 3].map(i => down ? s + 40 - d * i : s + d * i); const ans = down ? s + 40 - d * 4 : s + d * 4;
+          return { e: '🔢', q: `What comes next?${big(seq.join(', ') + ', ?')}`, a: ans, x: [ans + d, ans - d] }; },
+  () => { const a = r(2, 12), b = r(2, 6), c = r(2, 6); return { e: '🧩', q: `Careful! What is…${big(`${a} + ${b} × ${c}`)}`, a: a + b * c, x: [(a + b) * c] }; },
+  () => { const n = r(101, 989), to = pick([10, 100]); const ans = Math.round(n / to) * to; return { e: '🎯', q: `Round ${big(fmt(n))} to the nearest ${to}.`, a: ans, x: [ans + to, ans - to, Math.floor(n / to) * to === ans ? ans + to : Math.floor(n / to) * to] }; },
+  () => { const l = r(3, 12), w = r(2, 9); return Math.random() < .5
+          ? { e: '📏', q: `A rectangle is ${l} cm long and ${w} cm wide. What is its <b>perimeter</b>?`, a: 2 * (l + w), x: [l * w, l + w], u: ' cm' }
+          : { e: '🟧', q: `A rectangle is ${l} cm long and ${w} cm wide. What is its <b>area</b>?`, a: l * w, x: [2 * (l + w), l + w], u: ' cm²' }; },
+  () => Math.random() < .5 ? (n => ({ e: '✌️', q: `What is double ${big(n)}`, a: 2 * n }))(r(13, 99)) : (n => ({ e: '🪓', q: `What is half of ${big(n)}`, a: n / 2 }))(2 * r(12, 120)),
+  () => { let n; do { n = r(1000, 9999); } while (new Set(String(n)).size < 4); const s = String(n), i = r(0, 3), dg = +s[i], val = dg * 10 ** (3 - i);
+          if (dg === 0) return mathMakers[0]();
+          return { e: '🏠', q: `What is the value of the digit <b>${dg}</b> in ${big(fmt(n))}`, a: val, opts: shuffle([dg, dg * 10, dg * 100, dg * 1000].map(v => fmt(v))), af: fmt(val) }; },
+  () => { const k = r(3, 9), s = r(2, 8); return { e: '🍇', q: `${pick(pals)} shares ${k * s} grapes equally between ${k} friends. How many grapes does each friend get?`, a: s }; },
+];
+function makeMath() {
+  const m = pick(mathMakers)();
+  const u = m.u || '';
+  const ansStr = m.af || (typeof m.a === 'number' ? fmt(m.a) : m.a);
+  let opts = m.opts ? m.opts.map(String) : numOpts(m.a, (m.x || []).filter(v => v !== m.a)).map(v => fmt(+v));
+  if (u) opts = opts.map(o => o + u);
+  return { type: 'math', emoji: m.e, q: m.q, answer: ansStr + u, options: opts };
+}
+
+/* ---------------- RIDDLE BANK (answer first, then 3 wrong options) ---------------- */
+const RIDDLES = [
+ ['🥚','What has to be broken before you can use it?','An egg','A pencil','A window','A box'],
+ ['⏰','What has hands but can’t clap?','A clock','A tree','A chair','A glove'],
+ ['🍾','What has a neck but no head?','A bottle','A pencil','A cupcake','A spoon'],
+ ['🧻','What gets wetter the more it dries?','A towel','Rain','Soap','A cloud'],
+ ['🎹','What has lots of keys but can’t open a single door?','A piano','A lock','A car','A map'],
+ ['🎂','What goes up but never comes down?','Your age','A ball','A kite','A bird'],
+ ['🪡','What has one eye but can’t see?','A needle','A spoon','A shoe','A book'],
+ ['🧽','I’m full of holes but I can still hold water. What am I?','A sponge','A bucket','A net','A cup'],
+ ['🤧','What can you catch but never throw?','A cold','A ball','A frisbee','A pillow'],
+ ['🪑','What has four legs but can’t walk?','A table','A dog','A spider','A chicken'],
+ ['📅','Which month has 28 days?','All of them','February','March','None of them'],
+ ['🔤','What comes once in a minute, twice in a moment, but never in a thousand years?','The letter M','A second','The sun','A clock tick'],
+ ['👣','The more you take, the more you leave behind. What are they?','Footsteps','Cookies','Photos','Pencils'],
+ ['🧤','What has a thumb and four fingers but isn’t alive?','A glove','A hand','A sock','A ring'],
+ ['✉️','What can travel all around the world while staying in a corner?','A stamp','A plane','A map','A spider'],
+ ['📖','What has words but never speaks?','A book','A parrot','A radio','A robot'],
+ ['🏞️','What has a mouth but never eats, and a bed but never sleeps?','A river','A baby','A cave','A hotel'],
+ ['📚','Which building has the most stories?','A library','A skyscraper','A hotel','A school'],
+ ['🔮','What is always in front of you but can’t be seen?','The future','A wall','Your shoes','A cloud'],
+ ['🪮','What has teeth but can’t bite?','A comb','A shark','A dog','A crocodile'],
+ ['🤫','If you have me, you want to share me. If you share me, you don’t have me. What am I?','A secret','A cake','A toy','A joke'],
+ ['💡','What can fill a room but takes up no space?','Light','Water','Balloons','Furniture'],
+ ['📛','What belongs to you, but other people use it more than you do?','Your name','Your bag','Your pencil','Your lunch'],
+ ['🪙','What has a head and a tail but no body?','A coin','A snake','A fish','A kite'],
+ ['🍄','What kind of room has no doors or windows?','A mushroom','A bathroom','A classroom','A bedroom'],
+ ['🖤','What is black when it’s clean and white when it’s dirty?','A chalkboard','A cat','A shoe','Paper'],
+ ['📕','Where does Friday come before Thursday?','In the dictionary','In a calendar','On the moon','Nowhere'],
+ ['🚛','What has four wheels and flies?','A rubbish truck','An airplane','A bicycle','A skateboard'],
+ ['💪','What can you hold in your right hand but never in your left hand?','Your left elbow','A pencil','A ball','A sandwich'],
+ ['🕯️','I’m tall when I’m young and short when I’m old. What am I?','A candle','A tree','A giraffe','A mountain'],
+ ['❌','Which word is spelled wrong in every dictionary?','“Wrong”','“Right”','“Spell”','“Word”'],
+ ['🫖','What starts with T, ends with T, and has T in it?','A teapot','A table','A tiger','A tomato'],
+ ['🪶','Which is heavier: 1 kg of feathers or 1 kg of rocks?','They weigh the same','The rocks','The feathers','Nobody knows'],
+ ['🛣️','What goes through cities and fields but never moves?','A road','A car','A train','The wind'],
+ ['🌴','What kind of tree can you carry in your hand?','A palm','An oak','A pine','An apple tree'],
+ ['🧸','What do you call a bear with no teeth?','A gummy bear','A teddy bear','A polar bear','A koala'],
+ ['📘','Why was the maths book sad?','It had too many problems','It was too old','It got wet','It lost its pencil'],
+ ['🦕','What do you call a sleeping dinosaur?','A dino-snore','A T-Rest','A fossil','A lizard'],
+ ['🍪','Why did the cookie go to the doctor?','It felt crummy','It was hungry','It was too sweet','It lost a chip'],
+ ['🐍','What is a snake’s favourite school subject?','Hiss-tory','Maths','Science','Art'],
+ ['🍌','Why did the banana go to the doctor?','It wasn’t peeling well','It was too yellow','It was bent','It fell down'],
+ ['🧀','What do you call cheese that isn’t yours?','Nacho cheese','Swiss cheese','Cheddar','Feta'],
+ ['🍐','Which fruit do twins love the most?','Pears','Apples','Mangoes','Bananas'],
+ ['🧑‍🚀','What is an astronaut’s favourite key on a computer?','The space bar','The enter key','The mouse','The screen'],
+ ['🪜','Why did the student bring a ladder to school?','To go to high school','To fix the lights','To climb a tree','For PE class'],
+ ['🎲','What has 21 spots but is never sick?','A dice','A leopard','A ladybird','A clown'],
+ ['🤝','What can you break without touching it?','A promise','A plate','A pencil','An egg'],
+ ['📱','What has a ring but no finger?','A phone','A shoe','A cup','A sandwich'],
+ ['🕳️','What gets bigger the more you take away from it?','A hole','A cake','A pile of sand','A balloon'],
+ ['🐝','What goes “zzub zzub”?','A bee flying backwards','A zebra','A tiger','A barcode'],
+ ['♻️','Why is the DuoBox made from recycled paper?','To help our planet','To make it heavy','To make it shiny','So it can melt'],
+ ['🌍','Which of these can go in the recycling bin?','A clean paper box','A banana peel','Leftover juice','A dirty tissue'],
+ ['🔢','I’m a number. Double me and add 4, and you get 20. What am I?','8','10','12','6'],
+ ['7️⃣','I’m an odd number. Take away one letter and I become even. What am I?','Seven','Five','Nine','Three'],
+ ['🔺','How many sides do 3 triangles have altogether?','9','6','12','3'],
+ ['🐑','A farmer has 15 sheep. All but 8 run away. How many sheep are left?','8','7','15','0'],
+ ['🍎','There are 6 apples and you take away 4. How many apples do YOU have?','4','2','6','10'],
+ ['🖐️','I’m a 2-digit number. My digits add up to 9 and I’m in the 5 times table. What am I?','45','36','54','27'],
+ ['🗓️','How many months have 31 days?','7','6','5','8'],
+ ['🤯','What is half of 2, plus 2?','3','2','4','1'],
+ ['🧁','A cupcake and a juice cost 19 EGP together. The cupcake costs 10 EGP. How much is the juice?','9 EGP','10 EGP','29 EGP','8 EGP'],
+ ['⏳','How many minutes are in 2 and a half hours?','150','120','250','130'],
+ ['0️⃣','Multiply me by ANY number and the answer is always me. What am I?','0','1','10','100'],
+ ['🥇','I’m the smallest prime number. What am I?','2','1','3','0'],
+ ['🎂','Sam is 4 years older than Lily. Lily is 8. How old will Sam be in 2 years?','14','12','10','16'],
+ ['🕷️','How many legs do 3 spiders and 2 cats have altogether?','32','30','28','26'],
+ ['🕒','At 3 o’clock, what is the angle between the clock’s hands?','90°','180°','45°','60°'],
+ ['🟦','What comes next: 1, 4, 9, 16, …?','25','20','24','36'],
+ ['🌞','How many hours are there in 3 days?','72','48','64','84'],
+ ['🧮','I have 3 tens and 14 ones. What number am I?','44','314','34','17'],
+ ['🥤','A slush costs 25 EGP. How many slushes can you buy with 100 EGP?','4','5','3','25'],
+ ['🍰','What is half of a half?','A quarter','One whole','A half','Two'],
+ ['⚖️','Which is bigger: 0.5 or 0.45?','0.5','0.45','They are the same','You can’t tell'],
+ ['🧊','How many corners does a cube have?','8','6','12','4'],
+ ['🎁','How many faces does a cube have?','6','8','4','12'],
+ ['💯','What is the next odd number after 99?','101','100','103','98'],
+ ['🏛️','What number does the Roman numeral X stand for?','10','5','100','1'],
+ ['🤑','How many zeros are there in one million?','6','5','7','3'],
+ ['🥪','4 friends each eat 2 sandwiches. How many sandwiches is that?','8','6','4','10'],
+ ['🐔','A hen lays 2 eggs every day. How many eggs in one week?','14','12','7','16'],
+ ['🚲','How many wheels do 5 bicycles and 2 tricycles have altogether?','16','14','17','12'],
+];
+
+function makeRiddle() {
+  let pool = RIDDLES.map((_, i) => i).filter(i => !save.seen.includes(i));
+  if (pool.length < 4) { save.seen = []; pool = RIDDLES.map((_, i) => i); }   // seen them all → start fresh
+  const i = pick(pool.filter(x => !session.used.includes(x)).length ? pool.filter(x => !session.used.includes(x)) : pool);
+  session.used.push(i); save.seen.push(i); persist();
+  const [emoji, q, ans, ...wrong] = RIDDLES[i];
+  return { type: 'riddle', emoji, q, answer: ans, options: shuffle([ans, ...wrong]) };
+}
+
+/* ---------------- game state ---------------- */
+const session = { mode: 'mix', streak: 0, current: null, used: [], lastMath: '' };
+
+function nextQuestion() {
+  let qn;
+  const useRiddle = session.mode === 'riddle' || (session.mode === 'mix' && Math.random() < .5);
+  if (useRiddle) qn = makeRiddle();
+  else { do { qn = makeMath(); } while (qn.q === session.lastMath); session.lastMath = qn.q; }
+  session.current = qn;
+  $('#qTag').textContent = qn.type === 'math' ? '🧮 MATH CHALLENGE' : '💡 RIDDLE TIME';
+  $('#qTag').className = 'tag' + (qn.type === 'riddle' ? ' r' : '');
+  $('#qEmoji').textContent = qn.emoji;
+  $('#qText').innerHTML = qn.q;
+  const box = $('#answers'); box.innerHTML = '';
+  const long = qn.options.some(o => o.length > 12);
+  qn.options.forEach(o => {
+    const b = document.createElement('button'); b.className = 'ans' + (long ? ' long' : ''); b.textContent = o;
+    b.onclick = () => answer(b, o); box.appendChild(b);
+  });
+  drawStreak();
+}
+
+function drawStreak() {
+  const s = $('#streak'); s.innerHTML = '';
+  for (let i = 0; i < 5; i++) { const d = document.createElement('div'); d.className = 'cup' + (i < session.streak ? ' on' : ''); d.textContent = '🥤'; s.appendChild(d); }
+  $('#streakTxt').textContent = streakLines[Math.min(session.streak, 4)];
+}
+
+function answer(btn, choice) {
+  const qn = session.current, ok = choice === qn.answer;
+  $$('.ans').forEach(b => { b.disabled = true; if (b.textContent === qn.answer) b.classList.add('right'); else if (b !== btn) b.classList.add('dim'); });
+  if (ok) {
+    session.streak++; save.best = Math.max(save.best, session.streak); persist(); drawStreak();
+    sfx.right(); confetti(session.streak === 5 ? 10 : 45);
+    if (session.streak >= 5) { setTimeout(win, 700); return; }
+    const [face, title] = pick(yay);
+    setTimeout(() => showFb(face, title, `${5 - session.streak} more in a row for a FREE SLUSH! 🥤`, 'NEXT ➜', '', nextQuestion), 450);
+  } else {
+    btn.classList.add('wrong'); sfx.wrong();
+    const had = session.streak; session.streak = 0;
+    const [face, title] = pick(oops);
+    setTimeout(() => showFb(face, title,
+      `The answer was <span class="ansreveal">${qn.answer}</span><br>${had ? `You had ${had} in a row… ` : ''}Now solve <b>5 more</b> in a row! You can do it! 💪`,
+      'TRY AGAIN 💪', 'purple', () => { drawStreak(); nextQuestion(); }), 650);
+  }
+}
+
+function showFb(face, title, html, btnText, btnClass, then) {
+  $('#fbFace').textContent = face; $('#fbTitle').textContent = title; $('#fbText').innerHTML = html;
+  const b = $('#fbBtn'); b.textContent = btnText; b.className = 'btn big ' + (btnClass || '');
+  b.onclick = () => { sfx.click(); $('#overlay').classList.remove('show'); then(); };
+  $('#overlay').classList.add('show');
+}
+
+/* ---------------- winning ticket code ----------------
+   Format DUO-ABCDX : 4 random letters/digits + 1 check letter.
+   The stall team can check a code is real on the staff screen. */
+const AL = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const check = s => AL[[...s].reduce((t, ch, i) => t + (AL.indexOf(ch) + 3) * (i + 7), 11) % AL.length];
+function newCode() { let s = ''; for (let i = 0; i < 4; i++) s += AL[r(0, AL.length - 1)]; return 'DUO-' + s + check(s); }
+function validCode(c) { c = c.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (c.startsWith('DUO')) c = c.slice(3); if (c.length !== 5 || [...c].some(ch => !AL.includes(ch))) return false; return check(c.slice(0, 4)) === c[4]; }
+
+function win() {
+  save.points += 100; save.slushes++; persist(); updateHud();
+  $('#tName').textContent = '🏆 ' + (save.name || 'Champion');
+  $('#tCode').textContent = newCode();
+  $('#tTime').textContent = new Date().toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  setBg('orange'); show('s-win'); Music.duck(3); sfx.win(); confetti(220); setTimeout(() => confetti(160), 700);
+}
+
+/* ---------------- navigation ---------------- */
+function setBg(c) { $('#bg').className = 'bg ' + c; }
+function show(id) { $$('.screen').forEach(s => s.classList.remove('active')); $('#' + id).classList.add('active'); scrollTo(0, 0); }
+function updateHud() {
+  $$('.ptsOut').forEach(e => e.textContent = fmt(save.points));
+  $('#slushCount').textContent = save.slushes; $('#bestStreak').textContent = save.best;
+  $('#hiName').textContent = save.name || 'Player'; $('#soundBtn').textContent = save.sound ? '🔊' : '🔇';
+}
+function goMenu() { setBg('purple'); updateHud(); show('s-menu'); }
+function startGame(mode) { session.mode = mode; session.streak = 0; setBg('purple'); show('s-game'); nextQuestion(); }
+
+$('#nameInput').value = save.name;
+$('#startBtn').onclick = () => {
+  const n = $('#nameInput').value.trim();
+  if (!n) { $('#nameMsg').textContent = 'Type a nickname first! 😄'; $('#nameInput').focus(); return; }
+  save.name = n; persist(); sfx.click(); confetti(60); goMenu();
+};
+$('#nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#startBtn').click(); });
+$$('.tile').forEach(t => t.onclick = () => { sfx.click(); startGame(t.dataset.mode); });
+$('#homeBtn').onclick = () => { sfx.click(); goMenu(); };
+$('#againBtn').onclick = () => { sfx.click(); startGame(session.mode); };
+$('#menuBtn2').onclick = () => { sfx.click(); goMenu(); };
+$('#soundBtn').onclick = () => { save.sound = !save.sound; persist(); updateHud(); sfx.click(); };
+$('#changeName').onclick = () => { setBg('purple'); show('s-intro'); };
+$('#staffBtn').onclick = () => { setBg('green'); $('#codeMsg').textContent = ''; $('#codeInput').value = ''; show('s-staff'); };
+$('#staffBack').onclick = goMenu;
+$('#checkBtn').onclick = () => {
+  const ok = validCode($('#codeInput').value);
+  $('#codeMsg').innerHTML = ok ? '<span style="color:#23812f">✅ Real DuoBox code! Give one slush 🥤</span>' : '<span style="color:#e53935">❌ Not a valid code</span>';
+  ok ? sfx.right() : sfx.wrong();
+};
+
+// browsers need one tap before any sound: the music starts on the first tap and then stays on
+function firstTap() {
+  Music.start();
+  if (Music.playing) { document.removeEventListener('pointerdown', firstTap); document.removeEventListener('keydown', firstTap); document.removeEventListener('touchstart', firstTap); }
+}
+document.addEventListener('pointerdown', firstTap);
+document.addEventListener('touchstart', firstTap, { passive: true });
+document.addEventListener('keydown', firstTap);
+
+updateHud();
+if (save.name) { $('#startBtn').textContent = 'PLAY AGAIN, ' + save.name.toUpperCase() + '! 🚀'; }
+})();
+</script>
+</body>
+</html>
